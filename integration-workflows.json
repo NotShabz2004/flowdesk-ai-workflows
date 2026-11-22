@@ -1,0 +1,551 @@
+[
+  {
+    "id": "portfolio-ai",
+    "versionId": "013ba09a-a6e7-4e66-8297-5065175bba9d",
+    "name": "Portfolio - Ai",
+    "active": false,
+    "settings": {
+      "executionOrder": "v1"
+    },
+    "nodes": [
+      {
+        "id": "Receive",
+        "name": "Receive",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "webhookId": "portfolio-ai",
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "portfolio-ai",
+          "responseMode": "responseNode",
+          "authentication": "headerAuth",
+          "options": {}
+        },
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "portfolio-connector-auth",
+            "name": "Portfolio backend access"
+          }
+        }
+      },
+      {
+        "id": "Gemini extraction",
+        "name": "Gemini extraction",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          250,
+          0
+        ],
+        "parameters": {
+          "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent",
+          "method": "POST",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "googlePalmApi",
+          "options": {
+            "timeout": 65000,
+            "response": {
+              "response": {
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify($json.body) }}"
+        },
+        "credentials": {
+          "googlePalmApi": {
+            "id": "uHBHaSV4u59W9jid",
+            "name": "Google Gemini(PaLM) Api account"
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "Return",
+        "name": "Return",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.4,
+        "position": [
+          500,
+          0
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify($json.body || {}) }}",
+          "options": {
+            "responseCode": "={{ $json.statusCode || 503 }}"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Receive": {
+        "main": [
+          [
+            {
+              "node": "Gemini extraction",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Gemini extraction": {
+        "main": [
+          [
+            {
+              "node": "Return",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  },
+  {
+    "id": "portfolio-calendar-busy",
+    "versionId": "4b71f299-ba2c-497b-aa71-96cb5d519c47",
+    "name": "Portfolio - Calendar Busy",
+    "active": false,
+    "settings": {
+      "executionOrder": "v1"
+    },
+    "nodes": [
+      {
+        "id": "Receive",
+        "name": "Receive",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "webhookId": "portfolio-calendar-busy",
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "portfolio-calendar-busy",
+          "responseMode": "responseNode",
+          "authentication": "headerAuth",
+          "options": {}
+        },
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "portfolio-connector-auth",
+            "name": "Portfolio backend access"
+          }
+        }
+      },
+      {
+        "id": "Calendar availability",
+        "name": "Calendar availability",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          250,
+          0
+        ],
+        "parameters": {
+          "url": "https://www.googleapis.com/calendar/v3/freeBusy",
+          "method": "POST",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "googleCalendarOAuth2Api",
+          "options": {
+            "timeout": 65000,
+            "response": {
+              "response": {
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify($json.body) }}"
+        },
+        "credentials": {
+          "googleCalendarOAuth2Api": {
+            "id": "sKqfNb3VIhv2YtrK",
+            "name": "Google Calendar account"
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "Return",
+        "name": "Return",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.4,
+        "position": [
+          500,
+          0
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify($json.body || {}) }}",
+          "options": {
+            "responseCode": "={{ $json.statusCode || 503 }}"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Receive": {
+        "main": [
+          [
+            {
+              "node": "Calendar availability",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Calendar availability": {
+        "main": [
+          [
+            {
+              "node": "Return",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  },
+  {
+    "id": "portfolio-calendar-create",
+    "versionId": "4741d811-bb9e-47b0-a340-1dba96610163",
+    "name": "Portfolio - Calendar Create",
+    "active": false,
+    "settings": {
+      "executionOrder": "v1"
+    },
+    "nodes": [
+      {
+        "id": "Receive",
+        "name": "Receive",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "webhookId": "portfolio-calendar-create",
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "portfolio-calendar-create",
+          "responseMode": "responseNode",
+          "authentication": "headerAuth",
+          "options": {}
+        },
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "portfolio-connector-auth",
+            "name": "Portfolio backend access"
+          }
+        }
+      },
+      {
+        "id": "Create calendar event",
+        "name": "Create calendar event",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          250,
+          0
+        ],
+        "parameters": {
+          "url": "https://www.googleapis.com/calendar/v3/calendars/6eb1955c34502def63f25be36f8a7ad339087b1d66e5e88ce4b1ec8e576074a4%40group.calendar.google.com/events",
+          "method": "POST",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "googleCalendarOAuth2Api",
+          "options": {
+            "timeout": 65000,
+            "response": {
+              "response": {
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify($json.body) }}"
+        },
+        "credentials": {
+          "googleCalendarOAuth2Api": {
+            "id": "sKqfNb3VIhv2YtrK",
+            "name": "Google Calendar account"
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "Return",
+        "name": "Return",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.4,
+        "position": [
+          500,
+          0
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify($json.body || {}) }}",
+          "options": {
+            "responseCode": "={{ $json.statusCode || 503 }}"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Receive": {
+        "main": [
+          [
+            {
+              "node": "Create calendar event",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create calendar event": {
+        "main": [
+          [
+            {
+              "node": "Return",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  },
+  {
+    "id": "portfolio-calendar-get",
+    "versionId": "2e81a11e-d368-4b8e-b6cb-3a368a4fb342",
+    "name": "Portfolio - Calendar Get",
+    "active": false,
+    "settings": {
+      "executionOrder": "v1"
+    },
+    "nodes": [
+      {
+        "id": "Receive",
+        "name": "Receive",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "webhookId": "portfolio-calendar-get",
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "portfolio-calendar-get",
+          "responseMode": "responseNode",
+          "authentication": "headerAuth",
+          "options": {}
+        },
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "portfolio-connector-auth",
+            "name": "Portfolio backend access"
+          }
+        }
+      },
+      {
+        "id": "Verify calendar event",
+        "name": "Verify calendar event",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          250,
+          0
+        ],
+        "parameters": {
+          "url": "={{ 'https://www.googleapis.com/calendar/v3/calendars/6eb1955c34502def63f25be36f8a7ad339087b1d66e5e88ce4b1ec8e576074a4%40group.calendar.google.com/events/' + encodeURIComponent($json.body.event_id) }}",
+          "method": "GET",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "googleCalendarOAuth2Api",
+          "options": {
+            "timeout": 65000,
+            "response": {
+              "response": {
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "credentials": {
+          "googleCalendarOAuth2Api": {
+            "id": "sKqfNb3VIhv2YtrK",
+            "name": "Google Calendar account"
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "Return",
+        "name": "Return",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.4,
+        "position": [
+          500,
+          0
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify($json.body || {}) }}",
+          "options": {
+            "responseCode": "={{ $json.statusCode || 503 }}"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Receive": {
+        "main": [
+          [
+            {
+              "node": "Verify calendar event",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Verify calendar event": {
+        "main": [
+          [
+            {
+              "node": "Return",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  },
+  {
+    "id": "portfolio-calendar-delete",
+    "versionId": "b1ff3085-6414-4a64-8a01-b498db06e6dc",
+    "name": "Portfolio - Calendar Delete",
+    "active": false,
+    "settings": {
+      "executionOrder": "v1"
+    },
+    "nodes": [
+      {
+        "id": "Receive",
+        "name": "Receive",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "webhookId": "portfolio-calendar-delete",
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "portfolio-calendar-delete",
+          "responseMode": "responseNode",
+          "authentication": "headerAuth",
+          "options": {}
+        },
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "portfolio-connector-auth",
+            "name": "Portfolio backend access"
+          }
+        }
+      },
+      {
+        "id": "Cancel calendar event",
+        "name": "Cancel calendar event",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          250,
+          0
+        ],
+        "parameters": {
+          "url": "={{ 'https://www.googleapis.com/calendar/v3/calendars/6eb1955c34502def63f25be36f8a7ad339087b1d66e5e88ce4b1ec8e576074a4%40group.calendar.google.com/events/' + encodeURIComponent($json.body.event_id) }}",
+          "method": "DELETE",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "googleCalendarOAuth2Api",
+          "options": {
+            "timeout": 65000,
+            "response": {
+              "response": {
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "credentials": {
+          "googleCalendarOAuth2Api": {
+            "id": "sKqfNb3VIhv2YtrK",
+            "name": "Google Calendar account"
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "Return",
+        "name": "Return",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.4,
+        "position": [
+          500,
+          0
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify($json.body || {}) }}",
+          "options": {
+            "responseCode": "={{ $json.statusCode || 503 }}"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Receive": {
+        "main": [
+          [
+            {
+              "node": "Cancel calendar event",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Cancel calendar event": {
+        "main": [
+          [
+            {
+              "node": "Return",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  }
+]

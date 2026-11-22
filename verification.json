@@ -1,0 +1,19 @@
+{
+  "checked_at": "2026-11-22T16:50:54.029620+00:00",
+  "checks": [
+    "Frontend served",
+    "Consent enforced",
+    "Gemini structured extraction + SeaTable row created",
+    "Duplicate inquiry reuses CRM row",
+    "Live Calendar availability",
+    "Calendar creation verified by readback",
+    "Booking retry idempotent",
+    "Conflicting booking rejected",
+    "Explicit booking verification",
+    "Calendar cancellation",
+    "Cancelled slot available again"
+  ],
+  "synthetic_crm_row_retained": true,
+  "automated_tests_passed": 22,
+  "unauthenticated_connector_request_status": 403
+}

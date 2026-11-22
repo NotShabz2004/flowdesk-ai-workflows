@@ -1,0 +1,31 @@
+# Local credentials and databases
+.env
+.env.*
+!.env.example
+*.sqlite3
+*.sqlite3-*
+.connector-credential.json
+
+# Dependencies, caches and test output
+.venv/
+.uv-cache/
+__pycache__/
+.pytest_cache/
+.*tests/
+.test-temp*/
+*.pyc
+*.zip
+
+# Local setup/diagnostic artifacts, not application source
+inspect-*.cjs
+prepare-*.cjs
+repair-import.cjs
+fix-webhooks.cjs
+calendar-check.json
+calendar-roundtrip.json
+gemini-models.json
+service-check.json
+n8n_checks.py
+n8n-leads.json
+n8n-bookings.json
+test_n8n_live.py

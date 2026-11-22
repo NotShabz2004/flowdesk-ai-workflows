@@ -1,0 +1,6 @@
+.venv
+.uv-cache
+.test-temp
+__pycache__
+*.sqlite3
+.env

@@ -1,0 +1,4 @@
+@echo off
+cd /d "%~dp0"
+uv run uvicorn main:app --host 127.0.0.1 --port 18766
+pause

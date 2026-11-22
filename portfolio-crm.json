@@ -1,0 +1,303 @@
+{
+  "id": "portfolio-crm",
+  "versionId": "f067b80e-1954-417a-8561-a4ae9b29e962",
+  "name": "Portfolio - SeaTable CRM",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "id": "Receive",
+      "name": "Receive",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "webhookId": "portfolio-crm",
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "portfolio-crm",
+        "responseMode": "responseNode",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "portfolio-connector-auth",
+          "name": "Portfolio backend access"
+        }
+      }
+    },
+    {
+      "id": "Check CRM schema",
+      "name": "Check CRM schema",
+      "type": "n8n-nodes-base.seaTable",
+      "typeVersion": 2,
+      "position": [
+        200,
+        0
+      ],
+      "parameters": {
+        "resource": "base",
+        "operation": "metadata"
+      },
+      "credentials": {
+        "seaTableApi": {
+          "id": "fGbdHWd3D93qVwVD",
+          "name": "SeaTable account"
+        }
+      }
+    },
+    {
+      "id": "Validate schema and reference",
+      "name": "Validate schema and reference",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const required=['Name','Lead ID','Contact','Inquiry','Category','Summary','Status'];\nconst table=$input.first().json.tables?.find(t=>t.name==='Table1');\nconst missing=required.filter(n=>!table?.columns?.some(c=>c.name===n && c.type==='text'));\nif(missing.length) throw new Error('SeaTable setup required: add Text columns '+missing.join(', '));\nconst body=$('Receive').first().json.body;\nif(!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(body['Lead ID']||''))throw new Error('Invalid lead reference');\nfor(const name of required){if(typeof body[name]!=='string'||!body[name].trim())throw new Error('Missing '+name);}\nreturn [{json:body}];"
+      }
+    },
+    {
+      "id": "Find lead reference",
+      "name": "Find lead reference",
+      "type": "n8n-nodes-base.seaTable",
+      "typeVersion": 2,
+      "position": [
+        600,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "search",
+        "tableName": "Table1",
+        "searchColumn": "Lead ID",
+        "searchTerm": "={{ $json['Lead ID'] }}",
+        "options": {
+          "wildcard": false,
+          "simple": false,
+          "convert": true
+        }
+      },
+      "credentials": {
+        "seaTableApi": {
+          "id": "fGbdHWd3D93qVwVD",
+          "name": "SeaTable account"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "Already in CRM",
+      "name": "Already in CRM",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        800,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "exists",
+              "leftValue": "={{ Boolean($json._id) }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "Create CRM lead",
+      "name": "Create CRM lead",
+      "type": "n8n-nodes-base.seaTable",
+      "typeVersion": 2,
+      "position": [
+        1000,
+        120
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "create",
+        "tableName": "Table1",
+        "fieldsToSend": "defineBelow",
+        "columnsUi": {
+          "columnValues": [
+            {
+              "columnName": "Name",
+              "columnValue": "={{ $('Validate schema and reference').first().json[\"Name\"] }}"
+            },
+            {
+              "columnName": "Lead ID",
+              "columnValue": "={{ $('Validate schema and reference').first().json[\"Lead ID\"] }}"
+            },
+            {
+              "columnName": "Contact",
+              "columnValue": "={{ $('Validate schema and reference').first().json[\"Contact\"] }}"
+            },
+            {
+              "columnName": "Inquiry",
+              "columnValue": "={{ $('Validate schema and reference').first().json[\"Inquiry\"] }}"
+            },
+            {
+              "columnName": "Category",
+              "columnValue": "={{ $('Validate schema and reference').first().json[\"Category\"] }}"
+            },
+            {
+              "columnName": "Summary",
+              "columnValue": "={{ $('Validate schema and reference').first().json[\"Summary\"] }}"
+            },
+            {
+              "columnName": "Status",
+              "columnValue": "={{ $('Validate schema and reference').first().json[\"Status\"] }}"
+            }
+          ]
+        },
+        "bigdata": false,
+        "apply_default": false
+      },
+      "credentials": {
+        "seaTableApi": {
+          "id": "fGbdHWd3D93qVwVD",
+          "name": "SeaTable account"
+        }
+      }
+    },
+    {
+      "id": "CRM reference",
+      "name": "CRM reference",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const item=$input.first().json; const row=item._id || item.first_row?._id || item.row_ids?.[0]; if(!row)throw new Error('CRM returned no row reference'); return [{json:{row_id:row}}];"
+      }
+    },
+    {
+      "id": "Return",
+      "name": "Return",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1400,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Receive": {
+      "main": [
+        [
+          {
+            "node": "Check CRM schema",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check CRM schema": {
+      "main": [
+        [
+          {
+            "node": "Validate schema and reference",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate schema and reference": {
+      "main": [
+        [
+          {
+            "node": "Find lead reference",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find lead reference": {
+      "main": [
+        [
+          {
+            "node": "Already in CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create CRM lead": {
+      "main": [
+        [
+          {
+            "node": "CRM reference",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CRM reference": {
+      "main": [
+        [
+          {
+            "node": "Return",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Already in CRM": {
+      "main": [
+        [
+          {
+            "node": "CRM reference",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create CRM lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

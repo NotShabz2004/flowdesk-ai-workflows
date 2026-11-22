@@ -1,0 +1,111 @@
+{
+  "id": "portfolio-calendar-busy",
+  "versionId": "4b71f299-ba2c-497b-aa71-96cb5d519c47",
+  "name": "Portfolio - Calendar Busy",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "id": "Receive",
+      "name": "Receive",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "webhookId": "portfolio-calendar-busy",
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "portfolio-calendar-busy",
+        "responseMode": "responseNode",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "portfolio-connector-auth",
+          "name": "Portfolio backend access"
+        }
+      }
+    },
+    {
+      "id": "Calendar availability",
+      "name": "Calendar availability",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        250,
+        0
+      ],
+      "parameters": {
+        "url": "https://www.googleapis.com/calendar/v3/freeBusy",
+        "method": "POST",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleCalendarOAuth2Api",
+        "options": {
+          "timeout": 65000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body) }}"
+      },
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "sKqfNb3VIhv2YtrK",
+          "name": "Google Calendar account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "Return",
+      "name": "Return",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        500,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json.body || {}) }}",
+        "options": {
+          "responseCode": "={{ $json.statusCode || 503 }}"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Receive": {
+      "main": [
+        [
+          {
+            "node": "Calendar availability",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calendar availability": {
+      "main": [
+        [
+          {
+            "node": "Return",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
