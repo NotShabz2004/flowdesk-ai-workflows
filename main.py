@@ -39,7 +39,7 @@ async def lifespan(app):
     yield
 
 app = FastAPI(title="Business Workflows Portfolio", lifespan=lifespan,
-              description="AI-assisted portfolio demo: Gemini lead qualification, SeaTable CRM and verified Google Calendar appointments. Legacy mock endpoints remain for isolated tests.")
+              description="Lead and appointment workflow demo: Gemini lead qualification, SeaTable CRM and verified Google Calendar appointments. Legacy mock endpoints remain for isolated tests.")
 
 class LeadInput(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")

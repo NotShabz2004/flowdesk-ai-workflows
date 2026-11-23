@@ -12,7 +12,7 @@
 <form id="booking"><div class="row"><label>Date<input name="day" type="date" required></label><label>Dubai time<select name="slot"><option>10:00</option><option>11:00</option><option>12:00</option><option>13:00</option><option>14:00</option><option>15:00</option></select></label></div><label>Customer name<input name="name" required value="Sam Demo"></label><label>Email or phone<input name="contact" required value="sam@example.com"></label><button class="primary">Book & verify appointment</button></form>
 <div class="actions"><button id="check">Check availability</button><button id="list-bookings">View bookings</button></div>
 <div class="reference"><label>Booking reference<input id="booking-id" placeholder="Appears after booking or verification is needed"></label></div><div class="actions"><button id="verify">Verify reference</button><button id="cancel">Cancel reference</button></div><div id="booking-result" class="result" role="status" aria-live="polite">Check a future slot to begin. Reservations awaiting verification will never be shown as confirmed.</div></section>
-</div></main><footer>AI-assisted portfolio demo · No outbound email or WhatsApp · Local use with synthetic data · <a href="/docs">API documentation</a></footer>
+</div></main><footer>Flowdesk portfolio demo · No outbound email or WhatsApp · Local use with synthetic data · <a href="/docs">API documentation</a></footer>
 <script>
 const lead=document.getElementById('lead'),booking=document.getElementById('booking'),reference=document.getElementById('booking-id');
 const tomorrow=new Date(Date.now()+86400000);booking.elements.day.value=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Dubai',year:'numeric',month:'2-digit',day:'2-digit'}).format(tomorrow);
